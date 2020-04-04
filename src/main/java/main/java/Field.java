@@ -6,20 +6,31 @@ import java.util.Objects;
 
 public class Field {
 
-    public enum line {
+    public enum symbol {
+        cross('☦'), circle('✡'), nothing('.');
+        private char get;
+        public char getSymbol() {
+            return get;
+        }
+        symbol(char c) {
+             get = c;
+        }
+    }
+
+    private enum Line {
         leftRight, upDown, mainDiagonal, secondaryDiagonal
     }
 
     private int size;
-    char[][] field;
+    private symbol[][] field;
 
     Field(int size) { // конструктор для кастомного поля
         if (size < 3) throw new IllegalArgumentException("Wrong field size");
         this.size = size;
-        field = new char[this.size][this.size];
+        field = new symbol[this.size][this.size];
         for (int i = 0; i < size; i++) {
             for (int j = 0; j < size; j++) {
-                field[i][j] = '.';
+                field[i][j] = symbol.nothing;
             }
         }
     }
@@ -32,8 +43,8 @@ public class Field {
         return vertical < size && vertical >= 0 && horizontal < size && horizontal >= 0;
     }
 
-    private boolean set(int vertical, int horizontal, char element) { // метод добавления элемента
-        if (inBounds(vertical, horizontal) && field[vertical][horizontal] == '.') {
+    private boolean set(int vertical, int horizontal, symbol element) { // метод добавления элемента
+        if (inBounds(vertical, horizontal) && field[vertical][horizontal] == symbol.nothing) {
             field[vertical][horizontal] = element;
             return true;
         } else {
@@ -41,22 +52,22 @@ public class Field {
         }
     }
 
-    char get(int vertical, int horizontal) { // получение символа в заданной клетке
+    public symbol get(int vertical, int horizontal) { // получение символа в заданной клетке
         if (inBounds(vertical, horizontal)) return field[vertical][horizontal];
         else throw new IllegalArgumentException("Wrong Input");
     }
 
     public boolean setCross(int vertical, int horizontal) {
-        return set(vertical, horizontal, '☦');
+        return set(vertical, horizontal, symbol.cross);
     }
 
     public boolean setCircle(int vertical, int horizontal) {
-        return set(vertical, horizontal, '✡');
+        return set(vertical, horizontal, symbol.circle);
     }
 
     public boolean clear(int vertical, int horizontal) { // очистка указанной клетки
-        if (inBounds(vertical, horizontal) && field[vertical][horizontal] != '.') {
-            field[vertical][horizontal] = '.';
+        if (inBounds(vertical, horizontal) && field[vertical][horizontal] != symbol.nothing) {
+            field[vertical][horizontal] = symbol.nothing;
             return true;
         } else return false;
     }
@@ -69,26 +80,24 @@ public class Field {
         }
     }
 
-    private int checkDirection(line line, int vertical, int horizontal, char el, boolean direction) {
+    private int checkDirection(Line line, int vertical, int horizontal, symbol el, boolean direction) {
         int currentY = vertical;
         int currentX = horizontal;
         int currentMax = 0;
         while (inBounds(currentY, currentX) && field[currentY][currentX] == el) {
             currentMax++;
-            switch(line) {
+            switch (line) {
                 case leftRight:
                     if (direction) {
                         currentX++;
-                    }
-                    else {
+                    } else {
                         currentX--;
                     }
                     break;
                 case upDown:
                     if (direction) {
                         currentY++;
-                    }
-                    else {
+                    } else {
                         currentY--;
                     }
                     break;
@@ -96,8 +105,7 @@ public class Field {
                     if (direction) {
                         currentX++;
                         currentY++;
-                    }
-                    else {
+                    } else {
                         currentX--;
                         currentY--;
                     }
@@ -106,8 +114,7 @@ public class Field {
                     if (direction) {
                         currentX++;
                         currentY--;
-                    }
-                    else {
+                    } else {
                         currentX--;
                         currentY++;
                     }
@@ -117,12 +124,12 @@ public class Field {
         return currentMax;
     }
 
-    private int longestSequence(char el) {
+    private int longestSequence(symbol el) {
         int max = 0;
         int currentMax;
         for (int i = 0; i < size; i++) {
             for (int j = 0; j < size; j++) {
-                for (line a : line.values()) {
+                for (Line a : Line.values()) {
                     // вычитаю 1, т.к. в checkDirection считаю начальную клетку 2 раза
                     currentMax = checkDirection(a, i, j, el, true) - 1;
                     currentMax += checkDirection(a, i, j, el, false);
@@ -134,11 +141,20 @@ public class Field {
     }
 
     public int longestCrossSequence() {
-        return longestSequence('☦');
+        return longestSequence(symbol.cross);
     }
 
     public int longestCircleSequence() {
-        return longestSequence('✡');
+        return longestSequence(symbol.circle);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Field field1 = (Field) o;
+        return size == field1.size &&
+                Arrays.deepEquals(field, field1.field);
     }
 
     @Override
@@ -156,18 +172,8 @@ public class Field {
                 result.append(field[i][j]);
                 result.append(" ");
             }
-            result.append('\n');
+            result.append(System.lineSeparator());
         }
         return result.toString();
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        if (this == object) return true;
-        else if (object instanceof Field) {
-            Field other = (Field) object;
-            return this.size == other.size &&
-                    Arrays.deepEquals(this.field, other.field);
-        } else return false;
     }
 }
