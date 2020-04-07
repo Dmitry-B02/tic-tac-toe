@@ -3,7 +3,7 @@ import main.java.Field;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class test { // тесты для крестиков эквивалентны тестам для ноликов, поэтому вторые опустил
+class test { // тесты для крестиков эквивалентны тестам для ноликов, поэтому вторые опустил 
     private Field testField = new Field();
 
     @Test
